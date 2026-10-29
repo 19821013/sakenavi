@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SAKE NAVI</title>
+<style>
+:root{
+  --navy:#0f3b6e; --navy2:#1d5a9e; --bg:#eef4fa; --card:#fff; --text:#1c2a3a; --sub:#6b7a8c;
+  --line:#dde6f0; --chip:#e3f0fb; --chipText:#1d5a9e; --warn:#fff4e5; --warnText:#8a4b00; --sel:#e8f3fd; --tileText:#1c2a3a;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--navy:#3b7bd0;--navy2:#6fb0f0;--bg:#0e1621;--card:#152131;--text:#e6edf5;--sub:#9aa9bb;--line:#2a3a4f;--chip:#1e3550;--chipText:#9ccaf5;--warn:#3a2a12;--warnText:#f5c98a;--sel:#1c3552;color-scheme:dark}}
+:root[data-theme="dark"]{--navy:#3b7bd0;--navy2:#6fb0f0;--bg:#0e1621;--card:#152131;--text:#e6edf5;--sub:#9aa9bb;--line:#2a3a4f;--chip:#1e3550;--chipText:#9ccaf5;--warn:#3a2a12;--warnText:#f5c98a;--sel:#1c3552;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);font-family:"Hiragino Sans","Yu Gothic UI","Meiryo",sans-serif;color:var(--text)}
+#app{max-width:430px;min-height:100vh;margin:0 auto;background:var(--card);position:relative;padding-bottom:84px;box-shadow:0 0 30px rgba(15,59,110,.08)}
+.wrap{padding:20px 18px}
+h2{font-size:19px;text-align:center;margin:8px 0 6px}
+.lead{font-size:12.5px;color:var(--sub);text-align:center;margin:0 0 18px;line-height:1.6}
+.back{background:none;border:0;font-size:22px;color:var(--navy);cursor:pointer;padding:4px 8px}
+.btn{display:block;width:100%;border:0;border-radius:28px;padding:15px;font-size:15px;font-weight:700;background:var(--navy);color:#fff;cursor:pointer;margin-top:18px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.ghost{background:var(--card);color:var(--navy);border:1.5px solid var(--navy)}
+.progress{display:flex;gap:4px;margin:4px 0 10px}
+.progress i{flex:1;height:4px;border-radius:2px;background:var(--line)}
+.progress i.on{background:var(--navy2)}
+/* top */
+.hero{min-height:100vh;margin:-0 0 -84px;padding:60px 26px 40px;color:#fff;text-align:center;
+  background:linear-gradient(180deg,#1f4f8f 0%,#6d86b8 38%,#e9a26a 62%,#2b2f3a 100%);display:flex;flex-direction:column;justify-content:space-between}
+.hero h1{font-size:28px;line-height:1.5;margin:10px 0 12px;letter-spacing:.06em}
+.hero p{font-size:13px;opacity:.9;line-height:1.7}
+.logo{font-size:22px;letter-spacing:.2em;font-weight:700;margin-top:24px}
+.logo small{display:block;font-size:10px;letter-spacing:.1em;font-weight:400;opacity:.8}
+.glass{font-size:86px;filter:drop-shadow(0 10px 20px rgba(0,0,0,.35));margin:20px 0}
+.agebox{background:rgba(255,255,255,.14);border-radius:14px;padding:12px;font-size:13px;text-align:left;display:flex;gap:10px;align-items:center}
+.agebox input{width:20px;height:20px}
+.hero .btn{background:#fff;color:var(--navy)}
+.hero .note{font-size:10.5px;opacity:.75;margin-top:12px;line-height:1.6}
+/* temp */
+.temp-now{width:170px;height:150px;margin:0 auto 16px;border-radius:50%;background:radial-gradient(circle,#e9f5ff,#d3e9fb);display:flex;flex-direction:column;align-items:center;justify-content:center}
+.temp-now b{font-size:34px;color:var(--navy)}
+.temp-now span{font-size:42px}
+.temp-now small{font-size:11px;color:var(--sub)}
+.opt{display:flex;align-items:center;gap:12px;border:1.5px solid var(--line);border-radius:26px;padding:12px 16px;margin-bottom:10px;cursor:pointer;font-size:14px;background:var(--card)}
+.opt.sel{border-color:var(--navy2);background:var(--sel)}
+.opt .ic{font-size:20px;width:26px;text-align:center}
+.opt .ck{margin-left:auto;width:20px;height:20px;border-radius:50%;border:1.5px solid var(--line)}
+.opt.sel .ck{background:var(--navy2);border-color:var(--navy2);box-shadow:inset 0 0 0 4px var(--sel)}
+/* mood */
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.tile{color:var(--tileText);border-radius:16px;padding:22px 8px;text-align:center;cursor:pointer;border:2px solid transparent;font-size:13px;font-weight:600}
+.tile span{display:block;font-size:30px;margin-bottom:8px}
+.tile.sel{border-color:var(--navy2);box-shadow:0 4px 12px rgba(29,90,158,.18)}
+.hint{font-size:11.5px;color:var(--sub);text-align:center;margin-top:10px}
+/* taste */
+.taste{display:flex;align-items:center;gap:12px;margin:16px 0 22px}
+.taste .ti{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:19px;color:#fff;flex:none}
+.taste .tn{width:40px;font-weight:700;font-size:14px;flex:none}
+.taste .tr{flex:1}
+.taste input{width:100%}
+.taste .lab{display:flex;justify-content:space-between;font-size:10.5px;color:var(--sub)}
+input[type=range]{accent-color:var(--navy2)}
+/* cond */
+.sec{margin:16px 0 4px;font-weight:700;font-size:14px}
+.sec small{font-weight:400;color:var(--sub);font-size:11px;margin-left:6px}
+.pills{display:flex;flex-wrap:wrap;gap:8px}
+.pill{border:1.5px solid var(--line);background:var(--card);color:var(--text);border-radius:20px;padding:8px 14px;font-size:13px;cursor:pointer}
+.pill.sel{background:var(--navy);border-color:var(--navy);color:#fff}
+.warn{background:var(--warn);color:var(--warnText);border-radius:12px;padding:12px 14px;font-size:12.5px;line-height:1.6;margin:12px 0}
+/* results */
+.head{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.head h2{margin:0;text-align:left;font-size:18px}
+.item{display:flex;gap:12px;padding:14px 0;border-bottom:1px solid var(--line);cursor:pointer;align-items:center}
+.thumb{width:76px;height:76px;border-radius:12px;flex:none;display:flex;align-items:center;justify-content:center;font-size:38px}
+.item .body{flex:1;min-width:0}
+.item .nm{font-weight:700;font-size:15px;display:flex;justify-content:space-between;gap:6px}
+.item .ds{font-size:12px;color:var(--sub);line-height:1.5;margin-top:4px}
+.chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
+.chip{background:var(--chip);color:var(--chipText);font-size:10.5px;border-radius:10px;padding:2px 8px}
+.score{font-size:11px;font-weight:700;color:var(--navy2);white-space:nowrap}
+.bar{height:5px;border-radius:3px;background:var(--line);margin-top:6px;overflow:hidden}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,#5aa9e6,var(--navy))}
+.heart{background:none;border:0;font-size:20px;cursor:pointer;color:#c7d2de;padding:0}
+.heart.on{color:#e5484d}
+.summary{background:var(--bg);border-radius:12px;padding:10px 12px;font-size:11.5px;color:var(--sub);line-height:1.7}
+/* detail */
+.dhero{height:220px;display:flex;align-items:center;justify-content:center;font-size:110px;position:relative}
+.dhero .back{position:absolute;left:8px;top:8px;background:rgba(255,255,255,.8);border-radius:50%;width:36px;height:36px}
+.list li{font-size:13px;margin:6px 0;list-style:none}
+.list li::before{content:"✓";color:var(--navy2);font-weight:700;margin-right:8px}
+.list{padding:0;margin:8px 0}
+.ways{display:flex;gap:8px;flex-wrap:wrap}
+.way{flex:1;min-width:84px;border:1.5px solid var(--line);border-radius:12px;padding:10px 6px;text-align:center;font-size:12px}
+.way.best{border-color:var(--navy2);background:var(--sel);font-weight:700}
+.way span{display:block;font-size:20px;margin-bottom:4px}
+.fb{display:flex;gap:8px}
+.fb .pill{flex:1;text-align:center}
+.prof{display:grid;grid-template-columns:44px 1fr;gap:6px 10px;font-size:12px;align-items:center}
+.prof .bar{margin:0}
+/* nav */
+nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:var(--card);border-top:1px solid var(--line);display:flex;padding:8px 0 12px;z-index:10}
+nav button{flex:1;background:none;border:0;font-size:10.5px;color:var(--sub);cursor:pointer}
+nav button span{display:block;font-size:20px}
+nav button.on{color:var(--navy);font-weight:700}
+.tabs{display:flex;background:var(--bg);border-radius:22px;padding:4px;margin:10px 0}
+.tabs button{flex:1;border:0;border-radius:18px;padding:9px;background:none;color:var(--text);font-size:13px;cursor:pointer}
+.tabs button.on{background:var(--navy);color:#fff;font-weight:700}
+.empty{text-align:center;color:var(--sub);font-size:13px;padding:40px 0}
+.hist{border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px;font-size:12.5px;cursor:pointer}
+.hist b{color:var(--navy)}
+.foot{font-size:10.5px;color:var(--sub);text-align:center;line-height:1.7;margin-top:22px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+// ===== データ（お酒の嗜好一覧.xlsx「お酒の品目一覧」「飲み方一覧」を基に数値化） =====
+// s:甘さ b:苦味 a:酸味 r:香り c:炭酸 body:ボディ（1〜5） str:強さ(1:低 2:中 3:高) nov:冒険度(1:定番 3:個性派)
+const DRINKS = [
+ {n:"ビール",cat:"ビール系",ex:"ラガー、ピルスナー、ペールエール等",taste:"苦味、麦芽感、爽快感",tags:["苦味","爽快","炭酸","食中酒"],s:1,b:4,a:2,r:2,c:4,body:3,str:1,ways:["冷やしてそのまま"],moods:["refresh","fun","meal"],foods:["揚げ物","肉","中華"],nov:1,e:"🍺"},
+ {n:"クラフトビール（IPA等）",cat:"ビール系",ex:"IPA、スタウト、ヴァイツェン等",taste:"柑橘香、苦味、ロースト感など多様",tags:["個性派","香り","苦味"],s:2,b:4,a:2,r:5,c:4,body:3,str:1,ways:["冷やしてそのまま"],moods:["refresh","reward","fun"],foods:["揚げ物","肉","チーズ"],nov:3,e:"🍺"},
+ {n:"発泡酒・新ジャンル",cat:"ビール系",ex:"商品ごとに原料・製法が異なる",taste:"軽快、すっきり",tags:["すっきり","炭酸","日常向け"],s:2,b:2,a:2,r:1,c:4,body:1,str:1,ways:["冷やしてそのまま"],moods:["refresh","fun"],foods:["揚げ物","中華"],nov:1,e:"🍺"},
+ {n:"日本酒（純米酒）",cat:"日本酒",ex:"米・米こうじを主原料とする",taste:"米の旨味、酸味、コク",tags:["旨味","米","食中酒","燗向き"],s:2,b:2,a:3,r:3,c:1,body:4,str:2,ways:["冷酒","常温","燗酒"],warm:1,moods:["meal","relax","slow"],foods:["和食","魚介"],nov:1,e:"🍶"},
+ {n:"日本酒（吟醸・大吟醸）",cat:"日本酒",ex:"精米歩合などの要件による区分",taste:"華やかな香り、軽快さ",tags:["華やか","フルーティー","香り"],s:3,b:1,a:2,r:5,c:1,body:2,str:2,ways:["冷酒","常温"],moods:["reward","slow"],foods:["和食","魚介"],nov:2,e:"🍶"},
+ {n:"日本酒（本醸造酒）",cat:"日本酒",ex:"醸造アルコールを使用する特定名称酒",taste:"すっきり、軽快",tags:["すっきり","食中酒","燗向き"],s:2,b:2,a:2,r:2,c:1,body:2,str:2,ways:["冷酒","常温","燗酒"],warm:1,moods:["meal","relax"],foods:["和食","魚介","揚げ物"],nov:1,e:"🍶"},
+ {n:"日本酒（生酒・生原酒）",cat:"日本酒",ex:"加熱処理や加水の違いによるタイプ",taste:"フレッシュ、力強い傾向",tags:["フレッシュ","濃醇"],s:3,b:2,a:3,r:4,c:2,body:4,str:2,ways:["冷酒"],moods:["reward","refresh"],foods:["和食","魚介"],nov:2,e:"🍶"},
+ {n:"にごり酒・どぶろく",cat:"日本酒",ex:"製法・分類は商品による",taste:"米の甘味、酸味、濃厚さ",tags:["甘口","米","濃厚"],s:4,b:1,a:3,r:3,c:2,body:5,str:2,ways:["冷やして"],moods:["relax","reward"],foods:["和食","デザート"],nov:2,e:"🍶"},
+ {n:"芋焼酎",cat:"焼酎・泡盛",ex:"さつまいも由来",taste:"芋の香り、コク",tags:["香り","コク","お湯割り"],s:2,b:2,a:1,r:5,c:1,body:4,str:3,ways:["ロック","水割り","お湯割り","ソーダ割り"],warm:1,moods:["relax","meal","slow"],foods:["肉","揚げ物","和食"],nov:2,e:"🥃"},
+ {n:"麦焼酎",cat:"焼酎・泡盛",ex:"麦由来",taste:"香ばしさ、軽快さ",tags:["香ばしい","すっきり","万能"],s:1,b:2,a:1,r:3,c:1,body:2,str:3,ways:["ロック","水割り","お湯割り","ソーダ割り","お茶割り"],warm:1,moods:["meal","refresh","relax"],foods:["和食","揚げ物","魚介"],nov:1,e:"🥃"},
+ {n:"米焼酎",cat:"焼酎・泡盛",ex:"米由来",taste:"米の香り、まろやかさ",tags:["まろやか","米","香り"],s:2,b:1,a:1,r:3,c:1,body:3,str:3,ways:["ロック","水割り","お湯割り","ソーダ割り"],warm:1,moods:["relax","meal"],foods:["和食","魚介"],nov:2,e:"🥃"},
+ {n:"黒糖焼酎",cat:"焼酎・泡盛",ex:"奄美群島で製造される焼酎",taste:"黒糖由来の香り、柔らかさ",tags:["甘い香り","まろやか"],s:3,b:1,a:1,r:4,c:1,body:3,str:3,ways:["ロック","水割り","ソーダ割り"],moods:["relax","slow"],foods:["肉","デザート"],nov:2,e:"🥃"},
+ {n:"泡盛",cat:"焼酎・泡盛",ex:"沖縄の伝統的な蒸留酒",taste:"香り、コク、熟成感",tags:["沖縄","コク","熟成"],s:2,b:2,a:1,r:4,c:1,body:4,str:3,ways:["ロック","水割り","お湯割り"],warm:1,moods:["slow","relax"],foods:["肉","揚げ物","中華"],nov:3,e:"🥃"},
+ {n:"赤ワイン",cat:"ワイン",ex:"ライト・ミディアム・フルボディ等",taste:"果実味、渋み、酸味",tags:["渋み","果実味","コク","肉料理"],s:2,b:3,a:3,r:4,c:1,body:4,str:2,ways:["やや冷やして","常温に近い温度"],moods:["slow","reward","meal"],foods:["肉","チーズ"],nov:1,e:"🍷",bg:"#f6e3e6"},
+ {n:"白ワイン",cat:"ワイン",ex:"辛口・中辛口・甘口等",taste:"酸味、柑橘・花の香り",tags:["酸味","すっきり","魚料理"],s:2,b:1,a:4,r:4,c:1,body:2,str:2,ways:["冷やして"],moods:["meal","refresh","reward"],foods:["魚介","チーズ","和食"],nov:1,e:"🥂"},
+ {n:"ロゼワイン",cat:"ワイン",ex:"色・製法は商品による",taste:"果実味、軽快さ",tags:["果実味","軽快","万能"],s:3,b:1,a:3,r:3,c:1,body:2,str:2,ways:["冷やして"],moods:["fun","meal"],foods:["魚介","肉","中華"],nov:2,e:"🍷",bg:"#fbe6ee"},
+ {n:"スパークリングワイン",cat:"ワイン",ex:"シャンパーニュ等を含む発泡性ワイン",taste:"泡、酸味、果実味",tags:["泡","華やか","乾杯"],s:2,b:1,a:4,r:4,c:5,body:2,str:2,ways:["冷やして"],moods:["reward","fun","refresh"],foods:["魚介","揚げ物","チーズ"],nov:1,e:"🍾"},
+ {n:"オレンジワイン",cat:"ワイン",ex:"白ブドウを果皮とともに醸すタイプ",taste:"渋み、複雑さ、香り",tags:["個性派","渋み","複雑"],s:1,b:3,a:3,r:4,c:1,body:3,str:2,ways:["やや冷やして"],moods:["slow","reward"],foods:["和食","中華","チーズ"],nov:3,e:"🍷",bg:"#fdeeda"},
+ {n:"スコッチウイスキー",cat:"ウイスキー",ex:"モルト、ブレンデッド等",taste:"スモーキー、麦芽、熟成香",tags:["樽香","スモーキー","熟成"],s:1,b:3,a:1,r:5,c:1,body:5,str:3,ways:["ストレート","ロック","水割り","ハイボール"],moods:["slow","reward","relax"],foods:["チーズ","肉"],nov:2,e:"🥃"},
+ {n:"ジャパニーズウイスキー",cat:"ウイスキー",ex:"商品ごとに原料・製法・熟成が異なる",taste:"繊細さ、樽香、バランス",tags:["繊細","樽香","バランス"],s:2,b:2,a:1,r:4,c:1,body:4,str:3,ways:["ストレート","ロック","水割り","ハイボール"],moods:["slow","relax","reward"],foods:["和食","チーズ"],nov:2,e:"🥃"},
+ {n:"バーボン",cat:"ウイスキー",ex:"アメリカンウイスキーの一種",taste:"バニラ、キャラメル、スパイス",tags:["甘い香り","バニラ","コク"],s:3,b:2,a:1,r:4,c:1,body:5,str:3,ways:["ストレート","ロック","水割り","ハイボール"],moods:["slow","relax"],foods:["肉","デザート"],nov:2,e:"🥃"},
+ {n:"ブランデー",cat:"ブランデー",ex:"コニャック、アルマニャック等",taste:"果実香、樽香、熟成感",tags:["熟成","果実香","ゆっくり"],s:3,b:1,a:1,r:5,c:1,body:5,str:3,ways:["ストレート","ロック","水割り"],moods:["slow","reward"],foods:["チーズ","デザート"],nov:2,e:"🥃"},
+ {n:"ジン",cat:"ジン・ウォッカ等",ex:"ジュニパーベリー等の香りが特徴",taste:"ハーブ、柑橘、ボタニカル",tags:["ハーブ","柑橘","爽快"],s:1,b:3,a:3,r:5,c:3,body:2,str:3,ways:["トニック割り","ソーダ割り","カクテル"],moods:["refresh","fun"],foods:["揚げ物","魚介"],nov:2,e:"🍸"},
+ {n:"ウォッカ",cat:"ジン・ウォッカ等",ex:"比較的ニュートラルな香味",taste:"すっきり、クリア",tags:["クリア","すっきり","カクテル"],s:1,b:1,a:2,r:1,c:3,body:1,str:3,ways:["ソーダ割り","カクテル","ジュース割り"],moods:["fun","refresh"],foods:["魚介","揚げ物"],nov:1,e:"🍸"},
+ {n:"ラム",cat:"ジン・ウォッカ等",ex:"ホワイト・ゴールド・ダーク等",taste:"甘い香り、スパイス、熟成香",tags:["甘い香り","トロピカル"],s:4,b:1,a:2,r:4,c:2,body:3,str:3,ways:["ロック","ソーダ割り","カクテル"],moods:["fun","relax"],foods:["肉","デザート"],nov:2,e:"🍹"},
+ {n:"テキーラ",cat:"ジン・ウォッカ等",ex:"ブランコ、レポサド、アネホ等",taste:"植物感、柑橘、スパイス",tags:["植物感","スパイス","個性派"],s:1,b:2,a:3,r:4,c:2,body:3,str:3,ways:["ストレート","ソーダ割り","カクテル"],moods:["fun"],foods:["肉","揚げ物"],nov:3,e:"🍹"},
+ {n:"梅酒",cat:"リキュール",ex:"熟成・甘さ・酸味は商品による",taste:"甘酸っぱい、果実感",tags:["甘酸っぱい","果実","初心者向け"],s:5,b:1,a:4,r:3,c:1,body:3,str:2,ways:["ロック","水割り","ソーダ割り"],moods:["relax","fun"],foods:["和食","デザート"],nov:1,e:"🍑",bg:"#fff1d6"},
+ {n:"果実系リキュール",cat:"リキュール",ex:"ゆず、桃、みかん等",taste:"果実味、甘味、酸味",tags:["果実","甘口","香り"],s:5,b:1,a:3,r:4,c:2,body:2,str:2,ways:["ロック","ソーダ割り","カクテル"],moods:["fun","relax"],foods:["デザート","中華"],nov:1,e:"🍊",bg:"#fff1d6"},
+ {n:"ハーブ・ビター系リキュール",cat:"リキュール",ex:"薬草系、アマーロ等",taste:"苦味、複雑な香り",tags:["苦味","ハーブ","個性派"],s:2,b:5,a:2,r:5,c:2,body:3,str:2,ways:["ストレート","ソーダ割り","カクテル"],moods:["slow","reward"],foods:["チーズ","デザート"],nov:3,e:"🌿"},
+ {n:"レモンサワー・チューハイ",cat:"RTD・缶",ex:"レモン、グレープフルーツ等",taste:"酸味、爽快感（甘味は商品による）",tags:["炭酸","柑橘","手軽"],s:3,b:1,a:4,r:2,c:5,body:1,str:1,ways:["冷やしてそのまま"],moods:["refresh","fun","meal"],foods:["揚げ物","中華","肉"],nov:1,e:"🍋",bg:"#fffbd6"},
+ {n:"ハイボール",cat:"RTD・缶",ex:"ウイスキー等をソーダで割ったもの",taste:"爽快、樽香",tags:["炭酸","樽香","食中酒"],s:1,b:2,a:2,r:3,c:5,body:2,str:1,ways:["冷やしてそのまま"],moods:["refresh","meal"],foods:["揚げ物","肉","中華"],nov:1,e:"🥃"},
+ {n:"カクテル缶",cat:"RTD・缶",ex:"カシスオレンジ等",taste:"甘味、果実味",tags:["甘口","カクテル","手軽"],s:5,b:1,a:3,r:3,c:2,body:2,str:1,ways:["冷やしてそのまま"],moods:["fun","relax"],foods:["デザート"],nov:1,e:"🍹"},
+ {n:"紹興酒",cat:"その他",ex:"中国の代表的な醸造酒",taste:"熟成香、旨味、甘味",tags:["熟成","旨味","中華料理"],s:3,b:2,a:2,r:4,c:1,body:4,str:2,ways:["常温","燗","ロック"],warm:1,moods:["meal","slow"],foods:["中華"],nov:2,e:"🏮"},
+ {n:"シードル",cat:"その他",ex:"リンゴを発酵させた酒",taste:"果実味、酸味、泡",tags:["リンゴ","酸味","軽快"],s:3,b:1,a:4,r:3,c:4,body:1,str:1,ways:["冷やして"],moods:["refresh","fun"],foods:["チーズ","肉","デザート"],nov:2,e:"🍏"},
+ {n:"ミード（蜂蜜酒）",cat:"その他",ex:"蜂蜜を発酵させた酒",taste:"蜂蜜香（甘味・酸味は商品による）",tags:["蜂蜜","甘口","個性派"],s:4,b:1,a:2,r:4,c:1,body:3,str:2,ways:["冷やして","常温"],moods:["relax","slow"],foods:["チーズ","デザート"],nov:3,e:"🍯"},
+];
+// ノンアルコール候補（「ノンアルコールで楽しむ」「今日は飲まない」選択肢）
+const NONALC = [
+ {n:"ノンアルコールビール",cat:"ノンアルコール",ex:"アルコール度数は商品表示を確認",taste:"苦味、爽快感",tags:["ノンアル","炭酸","食中"],s:1,b:3,a:2,r:2,c:4,body:2,ways:["冷やして"],moods:["refresh","meal","fun"],foods:["揚げ物","肉","中華"],nov:1,e:"🍺",na:1},
+ {n:"ノンアルスパークリング",cat:"ノンアルコール",ex:"ブドウ果汁ベースの発泡飲料等",taste:"泡、酸味、果実味",tags:["ノンアル","泡","乾杯"],s:3,b:1,a:4,r:3,c:5,body:1,ways:["冷やして"],moods:["reward","fun"],foods:["魚介","チーズ"],nov:1,e:"🥂",na:1},
+ {n:"モクテル（ノンアルカクテル）",cat:"ノンアルコール",ex:"果汁・ハーブ・炭酸水を組み合わせて",taste:"果実味、香り、甘味は調整可能",tags:["ノンアル","見た目","香り"],s:4,b:1,a:3,r:4,c:3,body:1,ways:["冷やして"],moods:["fun","relax","reward"],foods:["デザート","魚介"],nov:2,e:"🍹",na:1},
+ {n:"炭酸水＋レモン",cat:"ノンアルコール",ex:"無糖の炭酸水にレモンを添えて",taste:"すっきり、柑橘",tags:["ノンアル","柑橘","すっきり"],s:1,b:1,a:3,r:2,c:5,body:1,ways:["冷やして"],moods:["refresh","meal"],foods:["揚げ物","中華","肉"],nov:1,e:"🍋",na:1},
+ {n:"温かいお茶・白湯",cat:"ノンアルコール",ex:"ほうじ茶・緑茶・白湯など",taste:"やさしい香り、温かさ",tags:["ノンアル","温かい","休息"],s:1,b:2,a:1,r:3,c:1,body:1,ways:["温かく"],warm:1,moods:["relax","slow"],foods:["和食","デザート"],nov:1,e:"🍵",na:1},
+];
+
+const TEMPS = [
+ {k:1,ic:"☀️",t:"とても暑い（30℃以上）",v:"32℃",note:"暑い"},
+ {k:2,ic:"🌤️",t:"暑い（25〜29℃）",v:"27℃",note:"やや暑い"},
+ {k:3,ic:"⛅",t:"やや涼しい（20〜24℃）",v:"22℃",note:"快適"},
+ {k:4,ic:"🌥️",t:"涼しい（15〜19℃）",v:"17℃",note:"やや涼しい"},
+ {k:5,ic:"❄️",t:"寒い（14℃以下）",v:"10℃",note:"寒い"},
+];
+const MOODS = [
+ {k:"relax",t:"リラックスしたい",ic:"🪷",bg:"#fde8ec"},
+ {k:"refresh",t:"リフレッシュしたい",ic:"🌿",bg:"#e3f6ec"},
+ {k:"fun",t:"楽しく過ごしたい",ic:"👥",bg:"#fff4d6"},
+ {k:"slow",t:"ゆっくりしたい",ic:"🌙",bg:"#ece8fb"},
+ {k:"reward",t:"頑張ったご褒美に",ic:"⭐",bg:"#ffe9dc"},
+ {k:"meal",t:"食事と一緒に",ic:"🍴",bg:"#e3f0fb"},
+];
+const TASTES = [
+ {k:"s",t:"甘さ",ic:"🍬",col:"#ef7b86",lo:"すっきり",hi:"甘い"},
+ {k:"b",t:"苦味",ic:"🍃",col:"#3dbb8f",lo:"弱い",hi:"強い"},
+ {k:"a",t:"酸味",ic:"🍋",col:"#f2b632",lo:"弱い",hi:"強い"},
+ {k:"r",t:"香り",ic:"🌸",col:"#8a63d2",lo:"控えめ",hi:"華やか"},
+ {k:"c",t:"炭酸",ic:"🫧",col:"#2d8fd8",lo:"なし",hi:"強い"},
+];
+const FOODS = ["和食","魚介","肉","揚げ物","中華","チーズ","デザート"];
+const WAY_IC = {"ロック":"🧊","水割り":"💧","お湯割り":"♨️","ソーダ割り":"🫧","ハイボール":"🫧","トニック割り":"🫧","ストレート":"🥃","冷酒":"❄️","冷やして":"❄️","冷やしてそのまま":"❄️","やや冷やして":"❄️","常温":"🌡️","常温に近い温度":"🌡️","燗酒":"♨️","燗":"♨️","温かく":"♨️","カクテル":"🍸","お茶割り":"🍵","ジュース割り":"🧃"};
+
+// ===== 状態 =====
+const LS = {
+  get(k,d){try{const v=localStorage.getItem("sakenavi_"+k);return v?JSON.parse(v):d}catch(e){return d}},
+  set(k,v){try{localStorage.setItem("sakenavi_"+k,JSON.stringify(v))}catch(e){}}
+};
+const blankAns = () => ({temp:null,moods:[],taste:{s:3,b:3,a:3,r:3,c:3},age:null,cond:null,drive:null,med:"該当なし",meal:null,foods:[],nonalc:"どちらでも",adv:2});
+let S = {screen:"top",ans:LS.get("lastAns",blankAns()),results:[],detail:null,favTab:"drink",ageOk:false};
+let favs = LS.get("favs",[]);       // お酒名の配列
+let fb = LS.get("feedback",{});    // {お酒名: "好き"|"普通"|"苦手"}
+let hist = LS.get("history",[]);   // [{date, ans, top:[名前]}]
+
+// ===== 推薦ロジック =====
+function safetyGate(a){
+  const r=[];
+  if(a.drive==="運転する") r.push("運転予定があるため");
+  if(a.med==="避ける必要がある"||a.med==="わからない") r.push("服薬・妊娠・授乳など、アルコールを控える必要がある（または不明な）ため");
+  if(a.cond==="気分がすぐれない") r.push("体調がすぐれないとのことなので");
+  return r;
+}
+function wayFor(d,temp){
+  const prefs = temp<=2 ? [/ソーダ|ハイボール|トニック/,/冷|ロック/] : temp>=4 ? [/お湯|燗|温かく/,/常温|ストレート/] : [];
+  for(const p of prefs){const w=d.ways.find(x=>p.test(x)); if(w) return w;}
+  return d.ways[0];
+}
+function scoreDrink(d,a){
+  const reasons=[];
+  // 1. 味わい（45点）
+  let diff=0; const close=[];
+  TASTES.forEach(t=>{const g=Math.abs(a.taste[t.k]-d[t.k]); diff+=g; if(g===0&&a.taste[t.k]!==3) close.push(t.t);});
+  const taste = 1-diff/20;
+  if(close.length) reasons.push(`${close.join("・")}の好みにぴったり`);
+  else if(taste>=.8) reasons.push("選んだ味わいのバランスに近い");
+  // 2. 気温（20点）
+  let tmp=.7, wayNow=wayFor(d,a.temp);
+  if(a.temp<=2){ tmp=(d.c+(6-d.body))/10; if(d.c>=4) reasons.push(`${a.temp===1?"とても暑い":"暑い"}日に爽快な炭酸`); else if(/ソーダ|ハイボール|トニック|ロック|冷/.test(wayNow)) reasons.push(`暑い日は「${wayNow}」で涼しげに`);}
+  else if(a.temp>=4){ tmp=d.warm?1:(d.body/5)*.7; if(d.warm) reasons.push(`${a.temp===5?"寒い":"涼しい"}日は「${wayNow}」で温まる`);}
+  // 3. 気分・シーン（20点）
+  let mood=.6;
+  if(a.moods.length){
+    const hit=a.moods.filter(m=>d.moods.includes(m));
+    mood=hit.length/a.moods.length;
+    hit.slice(0,2).forEach(m=>reasons.push(MOODS.find(x=>x.k===m).t.replace("したい","したい気分に").replace("頑張ったご褒美に","頑張った日のご褒美に").replace("食事と一緒に","食事と一緒に楽しめる")));
+  }
+  // 4. 食事（10点）
+  let food=.6;
+  if(a.meal==="あり"){
+    if(a.foods.length){const h=a.foods.filter(f=>d.foods.includes(f)); food=h.length?1:.3; if(h.length) reasons.push(`${h.join("・")}と相性◎`);}
+    else food=d.moods.includes("meal")||d.tags.includes("食中酒")?1:.5;
+  }else if(a.meal==="なし"){ food=d.moods.includes("slow")||d.moods.includes("relax")?.9:.6; }
+  // 5. 新しさ（5点）
+  const nov=1-Math.abs((d.nov||1)-a.adv)/2;
+  if(a.adv===3&&d.nov===3) reasons.push("冒険したい日にぴったりの個性派");
+  let score=taste*45+tmp*20+mood*20+food*10+nov*5;
+  // 体調補正：疲れ・眠気は度数の高いものを控えめに
+  if((a.cond==="疲れている"||a.cond==="眠い")&&d.str===3) score-=10;
+  if((a.cond==="疲れている"||a.cond==="眠い")&&d.str===1&&!d.na) reasons.push("疲れた日でも軽めに楽しめる");
+  // ノンアル希望
+  if(a.nonalc==="希望する") score+=d.na?25:-40;
+  if(a.nonalc==="希望しない"&&d.na) score-=40;
+  // フィードバック学習
+  if(fb[d.n]==="好き"){score+=8;reasons.push("以前「好き」と評価したお酒");}
+  if(fb[d.n]==="苦手") score-=20;
+  return {d,score:Math.max(0,Math.min(100,Math.round(score))),reasons:[...new Set(reasons)].slice(0,4),way:wayNow};
+}
+function recommend(){
+  const a=S.ans, gate=safetyGate(a);
+  const pool = gate.length||a.nonalc==="希望する" ? NONALC : DRINKS.concat(a.nonalc==="どちらでも"?NONALC:[]);
+  let res=pool.map(d=>scoreDrink(d,a)).sort((x,y)=>y.score-x.score);
+  if(!gate.length&&a.nonalc==="どちらでも"){ // ノンアルも同等の選択肢として必ず1つ表示
+    const top=res.filter(r=>!r.d.na).slice(0,5), na=res.find(r=>r.d.na);
+    res=top.concat(na?[na]:[]);
+  } else res=res.slice(0,5);
+  S.results=res; S.gate=gate;
+  hist.unshift({date:new Date().toLocaleString("ja-JP",{month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"}),ans:JSON.parse(JSON.stringify(a)),top:res.slice(0,3).map(r=>r.d.n)});
+  hist=hist.slice(0,20); LS.set("history",hist); LS.set("lastAns",a);
+}
+
+// ===== 画面 =====
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const ALL=()=>DRINKS.concat(NONALC);
+const find=n=>ALL().find(d=>d.n===n);
+const bgOf=d=>d.bg||(d.na?"#e6f6ef":d.c>=4?"#e4f2fc":d.warm?"#f6efe4":"#eef1f6");
+function go(s){S.screen=s;render();window.scrollTo(0,0);}
+function prog(n){return `<div class="progress">${[1,2,3,4].map(i=>`<i class="${i<=n?"on":""}"></i>`).join("")}</div>`;}
+function backBtn(to){return `<button class="back" onclick="go('${to}')">‹</button>`;}
+function pills(field,opts,multi){
+  const v=S.ans[field];
+  return `<div class="pills">${opts.map(o=>`<button class="pill ${(multi?v.includes(o):v===o)?"sel":""}" onclick="pick('${field}','${o}',${!!multi})">${o}</button>`).join("")}</div>`;
+}
+function pick(f,v,multi){
+  if(multi){const a=S.ans[f];S.ans[f]=a.includes(v)?a.filter(x=>x!==v):a.concat(v);}
+  else S.ans[f]=v;
+  if(f==="meal"&&v==="なし") S.ans.foods=[];
+  render();
+}
+
+const SCREENS={
+top(){return `<div class="hero">
+  <div><h1>あなたの気分に<br>ぴったりなお酒を。</h1>
+  <p>今の気分・体調・シーンに合わせて、<br>あなただけの一杯を提案します。</p>
+  <div class="glass">🥂</div>
+  <div class="logo">SAKE NAVI<small>Find Your Perfect Drink</small></div></div>
+  <div>
+   <label class="agebox"><input type="checkbox" ${S.ageOk?"checked":""} onchange="S.ageOk=this.checked;render()"> 私は20歳以上です</label>
+   <button class="btn" ${S.ageOk?"":"disabled"} onclick="S.ans=blankAns();S.ans.age=LS.get('lastAns',{}).age||null;go('temp')">はじめる</button>
+   ${hist.length?`<button class="btn ghost" style="background:transparent;color:#fff;border-color:#fff" onclick="go('fav')">お気に入り・履歴を見る</button>`:""}
+   <div class="note">お酒は20歳になってから。飲酒運転は法律で禁止されています。<br>妊娠中・授乳期の飲酒は控えましょう。</div>
+  </div></div>`;},
+
+temp(){const cur=TEMPS.find(t=>t.k===S.ans.temp);return `<div class="wrap">${backBtn("top")}${prog(1)}
+  <h2>気温を選択してください</h2><p class="lead">現在の気温や体感に近いものを選んでください。</p>
+  <div class="temp-now"><span>${cur?cur.ic:"🌡️"}</span><b>${cur?cur.v:"--"}</b><small>${cur?"（目安："+cur.note+"）":"未選択"}</small></div>
+  ${TEMPS.map(t=>`<div class="opt ${S.ans.temp===t.k?"sel":""}" onclick="S.ans.temp=${t.k};render()"><span class="ic">${t.ic}</span>${t.t}<span class="ck"></span></div>`).join("")}
+  <button class="btn" ${S.ans.temp?"":"disabled"} onclick="go('mood')">次へ</button></div>`;},
+
+mood(){return `<div class="wrap">${backBtn("temp")}${prog(2)}
+  <h2>その日の気分・シーンを<br>選択してください</h2><p class="lead">今の気分や、どんな時間を過ごしたいかを教えてください。（複数選択可）</p>
+  <div class="tiles">${MOODS.map(m=>`<div class="tile ${S.ans.moods.includes(m.k)?"sel":""}" style="background:${m.bg}" onclick="pick('moods','${m.k}',true)"><span>${m.ic}</span>${m.t}</div>`).join("")}</div>
+  <p class="hint">選ばなくても次へ進めます</p>
+  <button class="btn" onclick="go('taste')">次へ</button></div>`;},
+
+taste(){return `<div class="wrap">${backBtn("mood")}${prog(3)}
+  <h2>お好みの味わいを選択してください</h2><p class="lead">今日の気分で飲みたい味わいに合わせて調整してください。</p>
+  ${TASTES.map(t=>`<div class="taste"><div class="ti" style="background:${t.col}">${t.ic}</div><div class="tn">${t.t}</div>
+   <div class="tr"><input type="range" min="1" max="5" step="1" value="${S.ans.taste[t.k]}" oninput="S.ans.taste['${t.k}']=+this.value">
+   <div class="lab"><span>${t.lo}</span><span>${t.hi}</span></div></div></div>`).join("")}
+  <button class="btn" onclick="go('cond')">次へ</button></div>`;},
+
+cond(){const a=S.ans, gate=safetyGate(a), ok=a.age&&a.age!=="20歳未満"&&a.cond&&a.drive&&a.meal;
+  return `<div class="wrap">${backBtn("taste")}${prog(4)}
+  <h2>その他の条件を選択してください</h2><p class="lead">よりあなたに合ったお酒を提案するために、いくつかの情報をお伺いします。</p>
+  <div class="sec">年代</div>${pills("age",["20歳未満","20代","30代","40代","50代","60代以上","回答しない"])}
+  ${a.age==="20歳未満"?`<div class="warn">20歳未満の方はお酒の推薦をご利用いただけません。</div>`:""}
+  <div class="sec">体調</div>${pills("cond",["良い","普通","疲れている","眠い","気分がすぐれない"])}
+  <div class="sec">運転予定</div>${pills("drive",["運転する","運転予定なし"])}
+  <div class="sec">服薬・妊娠・授乳など<small>任意</small></div>${pills("med",["該当なし","避ける必要がある","わからない"])}
+  <div class="sec">食事の有無</div>${pills("meal",["あり","なし"])}
+  ${a.meal==="あり"?`<div class="sec">合わせたい料理<small>任意・複数可</small></div>${pills("foods",FOODS,true)}`:""}
+  <div class="sec">ノンアルコール</div>${pills("nonalc",["希望する","どちらでも","希望しない"])}
+  <div class="sec">今日の新しさ</div><div class="pills">${["定番がよい","少し変化がほしい","冒険したい"].map((t,i)=>`<button class="pill ${a.adv===i+1?"sel":""}" onclick="S.ans.adv=${i+1};render()">${t}</button>`).join("")}</div>
+  ${gate.length?`<div class="warn">⚠️ ${gate.join("、")}、今日はアルコール飲料ではなくノンアルコールの候補をご案内します。${a.med!=="該当なし"?"<br>服薬中の方は医師・薬剤師にご確認ください。":""}</div>`:""}
+  <button class="btn" ${ok?"":"disabled"} onclick="recommend();go('results')">おすすめを見る</button></div>`;},
+
+results(){const a=S.ans,t=TEMPS.find(x=>x.k===a.temp);
+  return `<div class="wrap"><div class="head">${backBtn("cond")}<h2>🥂 あなたにおすすめのお酒</h2></div>
+  <p class="lead" style="text-align:left">今の気分と条件から、こちらのお酒を提案します。</p>
+  <div class="summary">🌡️ ${t?t.t:""}　${a.moods.length?"／ "+a.moods.map(m=>MOODS.find(x=>x.k===m).t).join("・"):""}${a.meal==="あり"?"／ 食事あり"+(a.foods.length?"（"+a.foods.join("・")+"）":""):""}／ 体調：${a.cond}</div>
+  ${S.gate.length?`<div class="warn">${S.gate.join("、")}、ノンアルコールの候補のみ表示しています。</div>`:""}
+  ${(a.cond==="疲れている"||a.cond==="眠い")&&!S.gate.length?`<div class="warn">お疲れの日は量を控えめに、お水と一緒にゆっくり楽しみましょう。</div>`:""}
+  ${S.results.map((r,i)=>`<div class="item" onclick="S.detail=${i};S.from='results';go('detail')">
+    <div class="thumb" style="background:${bgOf(r.d)}">${r.d.e}</div>
+    <div class="body"><div class="nm"><span>${i+1}. ${esc(r.d.n)}</span><button class="heart ${favs.includes(r.d.n)?"on":""}" onclick="event.stopPropagation();toggleFav('${r.d.n}')">♥</button></div>
+    <div class="chips">${r.d.tags.slice(0,3).map(x=>`<span class="chip">${x}</span>`).join("")}</div>
+    <div class="ds">${esc(r.reasons[0]||r.d.taste)}。おすすめは「${r.way}」。</div>
+    <div style="display:flex;align-items:center;gap:8px"><div class="bar" style="flex:1"><i style="width:${r.score}%"></i></div><span class="score">適合度 ${r.score}</span></div></div></div>`).join("")}
+  <button class="btn ghost" onclick="go('temp')">条件を変えてもう一度</button>
+  <div class="foot">※味わいは一般的な傾向です。商品により異なります。<br>適量を守り、お水も一緒に。</div></div>`;},
+
+detail(){const r=typeof S.detail==="number"?S.results[S.detail]:scoreDrink(find(S.detail),S.ans), d=r.d, fav=favs.includes(d.n);
+  return `<div class="dhero" style="background:${bgOf(d)}"><button class="back" onclick="go(S.from||'results')">‹</button>${d.e}</div>
+  <div class="wrap"><h2 style="text-align:left;margin-top:0">${esc(d.n)}</h2>
+  <div class="chips">${d.tags.map(x=>`<span class="chip">${x}</span>`).join("")}</div>
+  <p style="font-size:13px;line-height:1.7;color:var(--sub)">${esc(d.taste)}が特徴。${esc(d.ex)}。<br><span style="font-size:11px">分類：${d.cat}</span></p>
+  ${r.reasons.length?`<div class="sec">こんな方におすすめ</div><ul class="list">${r.reasons.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:""}
+  <div class="sec">味わいプロフィール</div>
+  <div class="prof">${TASTES.map(t=>`<span>${t.t}</span><div class="bar"><i style="width:${d[t.k]*20}%;background:${t.col}"></i></div>`).join("")}</div>
+  <div class="sec">おすすめの飲み方</div>
+  <div class="ways">${d.ways.map(w=>`<div class="way ${w===r.way?"best":""}"><span>${WAY_IC[w]||"🍶"}</span>${w}${w===r.way?"<br><small>今日はこれ</small>":""}</div>`).join("")}</div>
+  <div class="sec">相性のよい料理</div><div class="chips">${d.foods.map(x=>`<span class="chip">${x}</span>`).join("")}</div>
+  <div class="sec">飲んでみた感想は？<small>次回の推薦に反映されます</small></div>
+  <div class="fb">${["好き","普通","苦手"].map(v=>`<button class="pill ${fb[d.n]===v?"sel":""}" onclick="setFb('${d.n}','${v}')">${v==="好き"?"😊":v==="普通"?"😐":"😣"} ${v}</button>`).join("")}</div>
+  <button class="btn ${fav?"ghost":""}" onclick="toggleFav('${d.n}')">${fav?"♥ お気に入りから外す":"♡ このお酒をお気に入りに追加"}</button></div>`;},
+
+fav(){const tab=S.favTab;
+  const list=tab==="drink"?favs.map(find).filter(Boolean):null;
+  return `<div class="wrap"><h2 style="text-align:left">お気に入り</h2>
+  <div class="tabs"><button class="${tab==="drink"?"on":""}" onclick="S.favTab='drink';render()">お酒</button><button class="${tab==="hist"?"on":""}" onclick="S.favTab='hist';render()">履歴・条件</button></div>
+  ${tab==="drink"?(list.length?list.map(d=>`<div class="item" onclick="S.detail='${d.n}';S.from='fav';go('detail')">
+     <div class="thumb" style="background:${bgOf(d)}">${d.e}</div><div class="body"><div class="nm"><span>${esc(d.n)}</span><button class="heart on" onclick="event.stopPropagation();toggleFav('${d.n}')">♥</button></div>
+     <div class="chips">${d.tags.slice(0,3).map(x=>`<span class="chip">${x}</span>`).join("")}</div>${fb[d.n]?`<div class="ds">評価：${fb[d.n]}</div>`:""}</div></div>`).join(""):`<div class="empty">まだお気に入りはありません。<br>おすすめ結果の ♥ で保存できます。</div>`)
+   :(hist.length?hist.map((h,i)=>`<div class="hist" onclick="reuse(${i})"><b>${h.date}</b>　${TEMPS.find(t=>t.k===h.ans.temp)?.t||""}<br>
+     ${h.ans.moods.map(m=>MOODS.find(x=>x.k===m).t).join("・")||"気分指定なし"}<br>→ ${h.top.join(" / ")}<br><small style="color:var(--navy2)">この条件でもう一度 ›</small></div>`).join(""):`<div class="empty">履歴はまだありません。</div>`)}
+  </div>`;},
+
+settings(){return `<div class="wrap"><h2 style="text-align:left">設定</h2>
+  <div class="summary">お気に入り ${favs.length}件 ／ 評価 ${Object.keys(fb).length}件 ／ 履歴 ${hist.length}件<br>データはこの端末のブラウザ内だけに保存されます。</div>
+  ${[["fb","評価（学習データ）"],["hist","履歴"],["favs","お気に入り"]].map(([k,t])=>`<button class="btn ghost" onclick="clearData('${k}')">${S.ask===k?"もう一度押すと削除します":t+"を削除"}</button>`).join("")}
+  <div class="foot">SAKE NAVI — その日のあなたに、最高の一杯を。<br>お酒は20歳になってから。飲酒運転は絶対にやめましょう。<br>体調がすぐれない日、服薬中・妊娠中・授乳期は飲酒を控えてください。</div></div>`;}
+};
+
+function toggleFav(n){favs=favs.includes(n)?favs.filter(x=>x!==n):favs.concat(n);LS.set("favs",favs);render();}
+function setFb(n,v){fb[n]=fb[n]===v?undefined:v;if(!fb[n])delete fb[n];LS.set("feedback",fb);render();}
+function clearData(k){
+  if(S.ask!==k){S.ask=k;render();return;}
+  S.ask=null;
+  if(k==="fb"){fb={};LS.set("feedback",fb);} if(k==="hist"){hist=[];LS.set("history",hist);} if(k==="favs"){favs=[];LS.set("favs",favs);}
+  render();
+}
+function reuse(i){S.ans=JSON.parse(JSON.stringify(hist[i].ans));go("temp");}
+
+function render(){
+  const s=S.screen;
+  const navOn={results:"home",fav:"fav",settings:"set"}[s];
+  const showNav=["results","fav","settings","detail"].includes(s);
+  $("#app").innerHTML=SCREENS[s]()+(showNav?`<nav>
+    <button class="${navOn==="home"?"on":""}" onclick="go(S.results.length?'results':'top')"><span>🏠</span>ホーム</button>
+    <button class="${navOn==="fav"&&S.favTab==="drink"?"on":""}" onclick="S.favTab='drink';go('fav')"><span>♥</span>お気に入り</button>
+    <button class="${navOn==="fav"&&S.favTab==="hist"?"on":""}" onclick="S.favTab='hist';go('fav')"><span>🕘</span>履歴</button>
+    <button class="${navOn==="set"?"on":""}" onclick="go('settings')"><span>⚙️</span>設定</button></nav>`:"");
+  $("#app").style.paddingBottom=s==="top"?"0":"84px";
+}
+render();
+</script>
+</body>
+</html>
